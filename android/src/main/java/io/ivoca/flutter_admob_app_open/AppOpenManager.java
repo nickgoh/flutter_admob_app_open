@@ -26,6 +26,7 @@ public class AppOpenManager implements LifecycleObserver,Application.ActivityLif
     private AppOpenAd appOpenAd = null;
     private static boolean isShowingAd = false;
     private long loadTime = 0;
+    private long showTime = 0;
 
 
     private AppOpenAd.AppOpenAdLoadCallback loadCallback;
@@ -35,12 +36,15 @@ public class AppOpenManager implements LifecycleObserver,Application.ActivityLif
 
     private final String adUnitId;
 
+    private final int coolingOffSec;
+
     private final Map<String, Object> targetingInfo;
 
     /** Constructor */
-    public AppOpenManager(Application myApplication, String adUnitId, Map<String, Object> targetingInfo) {
+    public AppOpenManager(Application myApplication, String adUnitId, Map<String, Object> targetingInfo,int coolingOffSec) {
         this.myApplication = myApplication;
         this.adUnitId = adUnitId;
+        this.coolingOffSec = coolingOffSec;
         this.targetingInfo = targetingInfo;
         this.myApplication.registerActivityLifecycleCallbacks(this);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
@@ -55,7 +59,7 @@ public class AppOpenManager implements LifecycleObserver,Application.ActivityLif
 
     /** Utility method that checks if ad exists and can be shown. */
     public boolean isAdAvailable() {
-        return appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4);
+        return appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4) && isCoolingOffExpired();
     }
 
     /** Request an ad */
@@ -102,6 +106,14 @@ public class AppOpenManager implements LifecycleObserver,Application.ActivityLif
         return (dateDifference < (numMilliSecondsPerHour * numHours));
     }
 
+    private boolean isCoolingOffExpired() {
+        long dateDifference = (new Date()).getTime() - this.showTime;
+        return (dateDifference > (coolingOffSec *1000));
+    }
+
+
+
+
 
     /** ActivityLifecycleCallback methods */
     @Override
@@ -144,6 +156,7 @@ public class AppOpenManager implements LifecycleObserver,Application.ActivityLif
                         public void onAdDismissedFullScreenContent() {
                             // Set the reference to null so isAdAvailable() returns false.
                             AppOpenManager.this.appOpenAd = null;
+                            AppOpenManager.this.showTime = (new Date()).getTime();
                             isShowingAd = false;
                             fetchAd();
                         }

@@ -32,13 +32,15 @@ class FlutterAdmobAppOpen {
     @required String appId,
     String appAppOpenAdUnitId,
     MobileAdTargetingInfo targetingInfo,
-  }){
+    int coolingOffSec,
+  }) {
     assert(appId != null && appId.isNotEmpty);
 
     return _channel.invokeMethod<bool>("initialize", <String, dynamic>{
       'appId': appId,
       'appAppOpenAdUnitId': appAppOpenAdUnitId,
       'targetingInfo': targetingInfo?.toJson(),
+      'coolingOffSec': coolingOffSec
     });
   }
 }

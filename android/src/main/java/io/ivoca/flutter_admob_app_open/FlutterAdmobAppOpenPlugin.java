@@ -53,12 +53,14 @@ public class FlutterAdmobAppOpenPlugin implements FlutterPlugin, MethodCallHandl
       }
 
       String appAppOpenAdUnitId = call.argument("appAppOpenAdUnitId");
+      int coolingOffSec = call.argument("coolingOffSec");
+
       final Map<String, Object> targetingInfo = call.argument("targetingInfo");
       
       MobileAds.initialize(applicationContext, appId);
 
       if(appAppOpenAdUnitId != null && appOpenManager == null && !hasAppOpenManager) {
-        this.appOpenManager = new AppOpenManager((Application) applicationContext, appAppOpenAdUnitId, targetingInfo);
+        this.appOpenManager = new AppOpenManager((Application) applicationContext, appAppOpenAdUnitId, targetingInfo,coolingOffSec);
         hasAppOpenManager = true;
       }
 
