@@ -7,7 +7,7 @@
 @property(nonatomic) NSDate *loadTime;
 @property(nonatomic) NSDate *showTime;
 @property(nonatomic, retain) NSString *appId;
-@property(nonatomic, retain) int *coolingOffSec;
+@property(nonatomic, retain) NSNumber *coolingOffSec;
 @property(nonatomic, retain) NSString *appAppOpenAdUnitId;
 @property(nonatomic, retain) NSDictionary *targetingInfo;
 

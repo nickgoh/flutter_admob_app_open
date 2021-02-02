@@ -23,15 +23,15 @@
        
         NSString *appId = (NSString *)call.arguments[@"appId"];
         NSString *appAppOpenAdUnitId = (NSString *)call.arguments[@"appAppOpenAdUnitId"];
-        int *coolingOffSec = (NSString *)call.arguments[@"coolingOffSec"];
+        NSNumber *coolingOffSec = (NSNumber *)call.arguments[@"coolingOffSec"];
         NSDictionary *targetingInfo = (NSDictionary *)call.arguments[@"targetingInfo"];
-        
-        
+
         self.appId = appId;
         self.appAppOpenAdUnitId = appAppOpenAdUnitId;
         self.coolingOffSec = coolingOffSec;
         self.targetingInfo = targetingInfo;
-        
+        self.showTime=[[NSDate date] dateByAddingTimeInterval:-3600*12];;
+
         if (appId == nil || [appId  isEqual: @""]) {
             result([FlutterError errorWithCode:@"no_app_id" message:@"a null or empty AdMob appId was provided" details:nil]);
             return;
@@ -51,11 +51,11 @@
 - (void)requestAppOpenAd {
 
     NSString *appAppOpenAdUnitId = (NSString *) self.appAppOpenAdUnitId;
-    
+
     if(appAppOpenAdUnitId == nil) {
         return;
     }
-    
+
     self.appOpenAd = nil;
 
     FLTRequestFactoryCustom *factory = [[FLTRequestFactoryCustom alloc] initWithTargetingInfo:(NSDictionary *) self.targetingInfo];
@@ -67,7 +67,7 @@
                    NSLog(@"Failed to load app open ad: %@", error);
                    return;
                  }
-                
+
                  self.appOpenAd = appOpenAd;
                  self.appOpenAd.fullScreenContentDelegate = self;
                  self.loadTime = [NSDate date];
@@ -103,16 +103,19 @@
   return intervalInHours < n;
 }
 
-- (BOOL)isCoolingOffExpired:() {
+- (BOOL)isCoolingOffExpired {
   NSDate *now = [NSDate date];
   NSTimeInterval timeIntervalBetweenNowAndShowTime = [now timeIntervalSinceDate:self.showTime];
-  return timeIntervalBetweenNowAndShowTime > self.coolingOffSec;
+    NSDateFormatter *format = [[NSDateFormatter alloc] init];
+
+  return timeIntervalBetweenNowAndShowTime > self.coolingOffSec.intValue;
 }
 
 - (void)tryToPresentAd:(UIWindow *)window {
   GADAppOpenAd *ad = self.appOpenAd;
   self.appOpenAd = nil;
   if (ad && [self wasLoadTimeLessThanNHoursAgo:4]&& [self isCoolingOffExpired]) {
+
     UIViewController *rootController = window.rootViewController;
      self.showTime = [NSDate date];
     [ad presentFromRootViewController:rootController];
