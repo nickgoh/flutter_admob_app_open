@@ -23,11 +23,13 @@
        
         NSString *appId = (NSString *)call.arguments[@"appId"];
         NSString *appAppOpenAdUnitId = (NSString *)call.arguments[@"appAppOpenAdUnitId"];
+        int *coolingOffSec = (NSString *)call.arguments[@"coolingOffSec"];
         NSDictionary *targetingInfo = (NSDictionary *)call.arguments[@"targetingInfo"];
         
         
         self.appId = appId;
         self.appAppOpenAdUnitId = appAppOpenAdUnitId;
+        self.coolingOffSec = coolingOffSec;
         self.targetingInfo = targetingInfo;
         
         if (appId == nil || [appId  isEqual: @""]) {
@@ -101,11 +103,18 @@
   return intervalInHours < n;
 }
 
+- (BOOL)isCoolingOffExpired:() {
+  NSDate *now = [NSDate date];
+  NSTimeInterval timeIntervalBetweenNowAndShowTime = [now timeIntervalSinceDate:self.showTime];
+  return timeIntervalBetweenNowAndShowTime > self.coolingOffSec;
+}
+
 - (void)tryToPresentAd:(UIWindow *)window {
   GADAppOpenAd *ad = self.appOpenAd;
   self.appOpenAd = nil;
-  if (ad && [self wasLoadTimeLessThanNHoursAgo:4]) {
+  if (ad && [self wasLoadTimeLessThanNHoursAgo:4]&& [self isCoolingOffExpired]) {
     UIViewController *rootController = window.rootViewController;
+     self.showTime = [NSDate date];
     [ad presentFromRootViewController:rootController];
 
   } else {
